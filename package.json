@@ -1,0 +1,35 @@
+{
+  "name": "fyp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chidubesteve/FYP.git"
+  },
+  "keywords": [],
+  "author": "Chidube Anike @chidubesteve",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/chidubesteve/FYP/issues"
+  },
+  "homepage": "https://github.com/chidubesteve/FYP#readme",
+  "dependencies": {
+    "canonical-json": "^0.4.0",
+    "dotenv": "^17.4.2",
+    "mqtt": "^5.15.1",
+    "nodemon": "^3.1.14"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.2"
+  }
+}
