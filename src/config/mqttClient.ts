@@ -13,7 +13,7 @@
 
 import mqtt from "mqtt";
 import { randomUUID } from "crypto";
-
+import chalk from 'chalk';
 /**
  * Options accepted by createMqttClient. Every field is optional so the helper
  * can be called with no arguments during local development against the default
@@ -83,8 +83,9 @@ export function createMqttClient(
     // why do we need this bit? wht attach, what does the resolve do? why do we need to remove the listeners here? what is going on with the listeners here?
     const onInitialConnect = () => {
       client.removeListener("error", onInitialError);
-      console.log(
-        `MQTT client ${clientId} connected to broker at ${brokerUrl}`,
+      console.log(chalk.green(
+        `MQTT client ${clientId} connected to broker at ${brokerUrl}`
+      )
       );
       attachLifecycleListeners(client, clientId, brokerUrl);
       resolve(client);
@@ -142,8 +143,9 @@ export async function disconnectMqttClient(
 ): Promise<void> {
   return new Promise((resolve) => {
     client.end(false, {}, () => {
-      console.log(
-        `MQTT client ${client.options.clientId} disconnected from broker`,
+      console.log(chalk.green(
+        `MQTT client ${client.options.clientId} disconnected from broker`
+      )
       );
       resolve();
     });

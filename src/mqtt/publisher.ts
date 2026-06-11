@@ -22,6 +22,7 @@ import {
   type SignedTelemetry,
 } from "../simulation/DataGenerator.js";
 import { fileURLToPath } from "url";
+import chalk from "chalk";
 
 // does the publisher broker need all these options/parameters? when i tested it i didn't pass any of this i just created a topic and published to it. and the subscriber recieved it. also what is keypath, as i have seen i don't have that or a keys directory?
 interface PublisherConfig {
@@ -78,7 +79,10 @@ async function loadOrCreateKeyPair(keyPath: string): Promise<DeviceKeyPair> {
     if (!parsed.privateKey || !parsed.publicKey) {
       throw new Error("Key file is missing  required fields");
     }
-    console.log(`[publisher] loaded existing keypair from ${keyPath}`);
+    console.log(
+      chalk.cyan("[publisher]"),
+      chalk.dim(`loaded existing keypair from ${keyPath}`),
+    );
     return parsed;
   } catch (error: unknown) {
     const code = (error as NodeJS.ErrnoException).code;
@@ -88,7 +92,10 @@ async function loadOrCreateKeyPair(keyPath: string): Promise<DeviceKeyPair> {
     const fresh = generateDeviceKeyPair();
     await fs.mkdir(path.dirname(keyPath), { recursive: true });
     await fs.writeFile(keyPath, JSON.stringify(fresh, null, 2), "utf8");
-    console.log(`[publisher] generated new keypair at ${keyPath}`);
+    console.log(
+      chalk.cyan("[publisher]"),
+      chalk.yellow(`generated new keypair at ${keyPath}`),
+    );
     return fresh;
   }
 }
@@ -128,8 +135,8 @@ function publishReading(
 export async function runPublisher(
   config: PublisherConfig,
 ): Promise<() => Promise<void>> {
-  console.log("[publisher] starting with configuration:");
-  console.log(JSON.stringify(redactForLog(config), null, 2));
+  console.log(chalk.cyan.bold("[publisher]"), "starting with configuration:");
+  console.log(chalk.dim(JSON.stringify(redactForLog(config), null, 2)));
 
   const keyPair = await loadOrCreateKeyPair(config.keyPath);
   const client = await createMqttClient({
@@ -153,12 +160,19 @@ export async function runPublisher(
       await publishReading(client, topic, reading);
       publishCount += 1;
       console.log(
-        `[publisher] #${publishCount} ${topic} value=${reading.payload.value} ${reading.payload.unit} ` +
-          `ts=${reading.payload.timestamp}`,
+        chalk.cyan("[publisher]"),
+        chalk.bold(`#${publishCount}`),
+        chalk.dim(topic),
+        "value=" + chalk.green(reading.payload.value),
+        reading.payload.unit,
+        chalk.dim(`ts=${reading.payload.timestamp}`),
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[publisher] publish failed: ${message}`);
+      console.error(
+        chalk.cyan("[publisher]"),
+        chalk.red(`publish failed: ${message}`),
+      );
     }
   };
 
@@ -171,7 +185,10 @@ export async function runPublisher(
     stopped = true;
     clearInterval(interval);
     await disconnectMqttClient(client);
-    console.log(`[publisher] stopped after ${publishCount} publishes`);
+    console.log(
+      chalk.cyan("[publisher]"),
+      chalk.yellow(`stopped after ${publishCount} publishes`),
+    );
   };
 
   // Fire once immediately so the first reading is not delayed by intervalMs.
@@ -205,7 +222,7 @@ if (isMain) {
   runPublisher(config)
     .then((stop) => {
       const shutdown = async (): Promise<void> => {
-        console.log("[publisher] shutdown signal received");
+        console.log(chalk.yellow("[publisher] shutdown signal received"));
         await stop();
         process.exit(0);
       };
@@ -217,7 +234,7 @@ if (isMain) {
       });
     })
     .catch((err: Error) => {
-      console.error(`[publisher] fatal: ${err.message}`);
+      console.error(chalk.red.bold(`[publisher] fatal:`), err.message);
       process.exit(1);
     });
 }
